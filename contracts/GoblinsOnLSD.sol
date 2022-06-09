@@ -557,7 +557,6 @@ library Address {
     }
 }
 
-
 // File: @openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 
 
@@ -961,11 +960,6 @@ interface IERC721Metadata is IERC721 {
 
 pragma solidity ^0.8.0;
 
-import "@thirdweb-dev/contracts/feature/ContractMetadata.sol";
-import "@thirdweb-dev/contracts/feature/Royalty.sol";
-import "@thirdweb-dev/contracts/feature/interface/IPermissionsEnumerable.sol";
-import "@thirdweb-dev/contracts/feature/interface/IMintableERC721.sol";
-import "@thirdweb-dev/contracts/feature/interface/IMulticall.sol";
 /**
  * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard, including
  * the Metadata and Enumerable extension. Built to optimize for lower gas during batch mints.
@@ -976,7 +970,7 @@ import "@thirdweb-dev/contracts/feature/interface/IMulticall.sol";
  *
  * Assumes that an owner cannot have more than the 2**128 - 1 (max value of uint128) of supply
  */
-contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable, PermissionsEnumerable, IMulticall, Royalty, ContractMetadata {
+contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable {
     using Address for address;
     using Strings for uint256;
 
@@ -1015,38 +1009,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         _name = name_;
         _symbol = symbol_;
     }
-  constructor() {
-      _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-      // you can setup any other roles here
-    }
-}
 
-    // Now this contract will have permissions out of the box
-    // you can add the modifier onlyRole(DEFAULT_ADMIN_ROLE) (or any other role) to your functions to control access
-    // Now this contract will have access to royalty functionality
-
-    // To control who can update royalties, make sure to implement the access control method below
-    function _canSetRoyaltyInfo() internal override returns (bool) {
-       // example implementation:
-       return msg.sender == owner;
-    }
-
-    // you now have contract metadata functionality in your contract
-
-    // Remember to implement the access control function
-    function _canSetContractURI() internal view override returns (bool) {
-        // example implementation:
-        return msg.sender == owner;
-}
-
-    // Implement your functions below
-    function mintTo(address to, string calldata uri) external override returns (uint256) {
-
-    }
-
-    function multicall(bytes[] data) external override returns (bytes[] results) {
-       // you can use any standard multi call implementation here
-    }
     /**
      * @dev See {IERC721Enumerable-totalSupply}.
      */
@@ -1481,7 +1444,15 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
     ) internal virtual {}
 }
 
-contract GoblinsOnLSD is ERC721A, Ownable, ReentrancyGuard {
+pragma solidity ^0.8.0;
+
+import "@thirdweb-dev/contracts/feature/ContractMetadata.sol";
+import "@thirdweb-dev/contracts/feature/Royalty.sol";
+import "@thirdweb-dev/contracts/feature/PermissionsEnumerable.sol";
+import "@thirdweb-dev/contracts/feature/interface/IMintableERC721.sol";
+import "@thirdweb-dev/contracts/feature/interface/IMulticall.sol";
+
+contract GoblinsOnLSD is ERC721A, Ownable, ReentrancyGuard, PermissionsEnumerable, IMulticall, Royalty, IMintableERC721, ContractMetadata {
 
   string public        baseURI;
   uint public          price             = 0.001 ether;
@@ -1491,8 +1462,37 @@ contract GoblinsOnLSD is ERC721A, Ownable, ReentrancyGuard {
   uint public          maxSupply         = 9999;
   uint public          nextOwnerToExplicitlySet;
   bool public          mintEnabled;
+  constructor() ERC721A("Goblins on LSD", "GOLSD"){ _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+      // you can setup any other roles here
+    }
 
-  constructor() ERC721A("Goblins on LSD", "GOLSD"){}
+
+    // Now this contract will have permissions out of the box
+    // you can add the modifier onlyRole(DEFAULT_ADMIN_ROLE) (or any other role) to your functions to control access
+    // Now this contract will have access to royalty functionality
+
+    // To control who can update royalties, make sure to implement the access control method below
+    function _canSetRoyaltyInfo() internal override returns (bool) {
+       // example implementation:
+       return msg.sender == owner;
+    }
+
+    // you now have contract metadata functionality in your contract
+
+    // Remember to implement the access control function
+    function _canSetContractURI() internal view override returns (bool) {
+        // example implementation:
+        return msg.sender == owner;
+}
+
+    // Implement your functions below
+    function mintTo(address to, string calldata uri) external override returns (uint256) {
+
+    }
+
+    function multicall(bytes[] data) external override returns (bytes[] results) {
+       // you can use any standard multi call implementation here
+    }
 
   function mint(uint256 amt) external payable
   {
